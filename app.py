@@ -7,7 +7,7 @@ import streamlit as st
 import api_client
 from ui import render_editor_form, render_result
 
-st.set_page_config(page_title="Shotstack Video Editor", page_icon="🎬", layout="centered")
+st.set_page_config(page_title="Rendi Video Editor", page_icon="🎬", layout="centered")
 
 css_path = Path(__file__).parent / "static" / "styles.css"
 if css_path.exists():
@@ -17,7 +17,7 @@ state = render_editor_form()
 
 if state["submitted"]:
     if not state["api_key"]:
-        st.error("Please enter your Shotstack Production API key.")
+        st.error("Please enter your Rendi API key.")
     elif state["video_file"] is None:
         st.error("Please upload a video file.")
     elif state["trim_end"] <= state["trim_start"]:
@@ -32,6 +32,7 @@ if state["submitted"]:
                     trim_end=state["trim_end"],
                     text_overlay=state["text_overlay"],
                     music_url=state["music_url"],
+                    filename=state["video_file"].name,
                 )
             except Exception as exc:
                 st.error(f"Render request failed: {exc}")
