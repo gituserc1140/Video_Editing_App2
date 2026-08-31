@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import re
 import time
 from typing import Any, Dict, List, Optional
 
@@ -26,6 +28,16 @@ def _normalize_api_key(api_key: str) -> str:
     if value.lower().startswith("bearer "):
         value = value[7:].strip()
     return value.strip("\"'")
+
+
+def _sanitize_filename(filename: str) -> str:
+    """Sanitize a filename so it matches Rendi's required pattern ^[a-zA-Z0-9_.-]+$."""
+    name = os.path.basename(filename or "").strip()
+    if not name:
+        return "input.mp4"
+    sanitized = re.sub(r"[^a-zA-Z0-9_.-]", "_", name)
+    sanitized = sanitized.strip("_") or "input.mp4"
+    return sanitized
 
 
 def _extract(data: Any, *paths: str) -> Optional[Any]:
@@ -138,7 +150,7 @@ def _upload_video_source(api_key: str, video_bytes: bytes, filename: str) -> str
         "POST",
         INIT_UPLOAD_ENDPOINT,
         api_key,
-        json_payload={"filename": filename, "size_bytes": len(video_bytes)},
+        json_payload={"filename": _sanitize_filename(filename), "size_bytes": len(video_bytes)},
         timeout=settings.DEFAULT_TIMEOUT,
     )
 
