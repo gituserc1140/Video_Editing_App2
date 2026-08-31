@@ -1,0 +1,16 @@
+.main .block-container {
+  max-width: 760px;
+  padding-top: 1.25rem;
+  padding-bottom: 2rem;
+}
+
+.stButton > button {
+  border-radius: 10px;
+}
+
+@media (max-width: 640px) {
+  .main .block-container {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
+}
