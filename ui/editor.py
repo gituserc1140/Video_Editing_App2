@@ -10,7 +10,11 @@ def render_editor_form() -> Dict[str, Any]:
     st.caption("Upload a video, set simple edits, and render using your Rendi (apps.make.com/rendi) API key.")
 
     with st.form("video-editor-form"):
-        api_key = st.text_input("Rendi API key", type="password")
+        api_key = st.text_input(
+            "Rendi API key",
+            type="password",
+            help="Paste only the key value. The app sends it using Rendi's X-API-KEY header.",
+        )
         video_file = st.file_uploader("Upload video", type=["mp4", "mov", "webm", "m4v"])
 
         st.subheader("Editing Controls")

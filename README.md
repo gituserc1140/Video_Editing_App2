@@ -32,7 +32,8 @@ streamlit run app.py
 ## How to use
 
 1. **Enter Rendi API key**
-   - Paste your Rendi API key into the `Rendi API key` field.
+   - Paste your Rendi API key value into the `Rendi API key` field. The app sends it in
+     Rendi's `X-API-KEY` request header.
 
 2. **Upload a video**
    - Upload an MP4/MOV/WEBM/M4V source file.

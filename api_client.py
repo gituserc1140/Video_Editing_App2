@@ -17,6 +17,17 @@ COMMAND_STATUS_ENDPOINT = "/v1/commands/{command_id}"
 DEFAULT_PART_SIZE = 10 * 1024 * 1024  # 10 MiB fallback if Rendi does not return one.
 
 
+def _normalize_api_key(api_key: str) -> str:
+    """Extract a Rendi key from common copied HTTP-header formats."""
+    value = api_key.strip()
+    for prefix in ("x-api-key:", "authorization:"):
+        if value.lower().startswith(prefix):
+            value = value[len(prefix) :].strip()
+    if value.lower().startswith("bearer "):
+        value = value[7:].strip()
+    return value
+
+
 def _extract(data: Any, *paths: str) -> Optional[Any]:
     for path in paths:
         current = data
@@ -62,7 +73,7 @@ def _request(
 ) -> Any:
     base_url = settings.RENDI_API_BASE_URL
     url = f"{base_url.rstrip('/')}/{path.lstrip('/')}"
-    headers = {"X-API-KEY": api_key.strip(), "Accept": "application/json"}
+    headers = {"X-API-KEY": _normalize_api_key(api_key), "Accept": "application/json"}
     if json_payload is not None:
         headers["Content-Type"] = "application/json"
 
@@ -243,7 +254,7 @@ def fetch_data(
     filename: str = "input.mp4",
 ) -> Dict[str, Any]:
     """Render a video via the Rendi FFmpeg API and return the final video URL details."""
-    if not api_key or not api_key.strip():
+    if not api_key or not _normalize_api_key(api_key):
         raise ValueError("A Rendi API key is required")
     if not video_bytes:
         raise ValueError("A video file upload is required")
