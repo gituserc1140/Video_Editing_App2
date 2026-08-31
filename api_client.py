@@ -120,15 +120,22 @@ def _request(
             body = None
         if isinstance(body, dict):
             detail = _error_detail(body)
-        invalid_key = (
+        detail_lower = detail.lower() if detail else ""
+        plan_restricted = response.status_code == 403 and (
+            "plan" in detail_lower or "upgrade" in detail_lower
+        )
+        invalid_key = not plan_restricted and (
             response.status_code in {401, 403}
             or (
                 response.status_code == 422
                 and detail is not None
-                and "authorization key" in detail.lower()
+                and "authorization key" in detail_lower
             )
         )
-        if invalid_key:
+        if plan_restricted:
+            plan_hint = "Your Rendi API key is valid, but your account's plan does not allow this action"
+            detail = f"{detail}; {plan_hint}" if detail else plan_hint
+        elif invalid_key:
             mismatch_hint = "Enter a valid, active Rendi API key (not an Authorization header value)"
             detail = f"{detail}; {mismatch_hint}" if detail else mismatch_hint
         if detail:
