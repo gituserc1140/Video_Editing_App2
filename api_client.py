@@ -25,7 +25,7 @@ def _normalize_api_key(api_key: str) -> str:
             value = value[len(prefix) :].strip()
     if value.lower().startswith("bearer "):
         value = value[7:].strip()
-    return value
+    return value.strip("\"'")
 
 
 def _extract(data: Any, *paths: str) -> Optional[Any]:
@@ -44,7 +44,7 @@ def _extract(data: Any, *paths: str) -> Optional[Any]:
 
 
 def _error_detail(body: Dict[str, Any]) -> Optional[str]:
-    error = _extract(body, "error", "errors", "message")
+    error = _extract(body, "detail", "error", "errors", "message")
     if isinstance(error, dict):
         parts = []
         name = error.get("name") or error.get("code")
@@ -108,8 +108,16 @@ def _request(
             body = None
         if isinstance(body, dict):
             detail = _error_detail(body)
-        if response.status_code == 401:
-            mismatch_hint = "Confirm your Rendi API key is valid and active"
+        invalid_key = (
+            response.status_code in {401, 403}
+            or (
+                response.status_code == 422
+                and detail is not None
+                and "authorization key" in detail.lower()
+            )
+        )
+        if invalid_key:
+            mismatch_hint = "Enter a valid, active Rendi API key (not an Authorization header value)"
             detail = f"{detail}; {mismatch_hint}" if detail else mismatch_hint
         if detail:
             raise requests.HTTPError(f"{exc} - {detail}", response=response) from exc
